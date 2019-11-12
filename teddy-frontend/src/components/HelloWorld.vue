@@ -1,142 +1,157 @@
 <template>
-  <v-container>
+  <v-container
+    fluid
+  >
+    <!-- Layout for the entire project -->
     <v-layout
+      align-center 
+      justify-center
       text-center
       wrap
     >
-      <v-flex xs12>
-        <v-img
-          :src="require('../assets/logo.svg')"
-          class="my-3"
-          contain
-          height="200"
-        ></v-img>
-      </v-flex>
-
-      <v-flex mb-4>
-        <h1 class="display-2 font-weight-bold mb-3">
-          Welcome to Vuetify
-        </h1>
-        <p class="subheading font-weight-regular">
-          For help and collaboration with other Vuetify developers,
-          <br>please join our online
-          <a href="https://community.vuetifyjs.com" target="_blank">Discord Community</a>
-        </p>
-      </v-flex>
-
-      <v-flex
-        mb-5
-        xs12
-      >
-        <h2 class="headline font-weight-bold mb-3">What's next?</h2>
-
-        <v-layout justify-center>
-          <a
-            v-for="(next, i) in whatsNext"
-            :key="i"
-            :href="next.href"
-            class="subheading mx-3"
-            target="_blank"
+    <!-- Layout for the  column on the left (for buttons-->
+     <v-layout column align-center justify-space-around fill-height>
+       <v-btn class="my-4" block> Undo
+       </v-btn>
+       <v-btn class="my-4" block> Redo
+       </v-btn>
+       <v-btn class="my-4" block> Erase
+       </v-btn>
+       <v-btn class="my-4" block> Draw
+       </v-btn>
+       <v-btn class="my-4" block> Clear
+       </v-btn>
+     </v-layout>
+     <v-spacer></v-spacer>
+     <!-- Canvas -->
+     <!-- <v-card>
+     </v-card> -->
+      <v-card class="elevation-12" :width="card_width" :height="card_height">
+            <canvas id="canvas"
+              ref="canvas"
+            ></canvas>
+          </v-card>
+     <v-layout column align-center justify-space-between fill-height>
+       <v-row>
+          <v-col
+            cols="12"
+            md="4"
           >
-            {{ next.text }}
-          </a>
-        </v-layout>
-      </v-flex>
-
-      <v-flex
-        xs12
-        mb-5
-      >
-        <h2 class="headline font-weight-bold mb-3">Important Links</h2>
-
-        <v-layout justify-center>
-          <a
-            v-for="(link, i) in importantLinks"
-            :key="i"
-            :href="link.href"
-            class="subheading mx-3"
-            target="_blank"
+            <v-btn
+              v-for="t in types"
+              :key="t"
+              class="my-4"
+              block
+              @click="type = t"
+            >{{ t }}</v-btn>
+          </v-col>
+          <!-- <v-col
+            class="d-flex justify-center"
           >
-            {{ link.text }}
-          </a>
-        </v-layout>
-      </v-flex>
 
-      <v-flex
-        xs12
-        mb-5
-      >
-        <h2 class="headline font-weight-bold mb-3">Ecosystem</h2>
-
-        <v-layout justify-center>
-          <a
-            v-for="(eco, i) in ecosystem"
-            :key="i"
-            :href="eco.href"
-            class="subheading mx-3"
-            target="_blank"
+          </v-col> -->
+          <v-col
+            class="d-flex justify-center"
           >
-            {{ eco.text }}
-          </a>
-        </v-layout>
-      </v-flex>
+            <v-color-picker v-model="color"></v-color-picker>
+          </v-col>
+          <v-col
+            cols="12"
+            md="4"
+          >
+            <v-sheet
+              dark
+              class="pa-4"
+            >
+              <pre>{{ showColor }}</pre>
+            </v-sheet>
+          </v-col>
+        </v-row>
+      </v-layout>
     </v-layout>
   </v-container>
 </template>
 
 <script>
-export default {
-  data: () => ({
-    ecosystem: [
-      {
-        text: 'vuetify-loader',
-        href: 'https://github.com/vuetifyjs/vuetify-loader',
+  export default {
+    data: () => ({
+      types: ['hex', 'hexa', 'rgba', 'hsla', 'hsva'],
+      type: 'hex',
+      hex: '#FF00FF',
+      hexa: '#FF00FFFF',
+      rgba: { r: 255, g: 0, b: 255, a: 1 },
+      hsla: { h: 300, s: 1, l: 0.5, a: 1 },
+      hsva: { h: 300, s: 1, v: 1, a: 1 },
+      card_width: 500,
+      card_height: 500,
+      mouseDown: false,
+      mouseX: 0,
+      mouseY: 0
+    }),
+    methods: {
+      // after page loads, these even listeners come into play
+      mounted(){
+        // this.$refs.canvas;
+        // let theCanvas = this.document.getElementById('cavnas');
+        // let theCanvas = document.getElementById('cavnas');
+
+        // theCanvas.addEventListener("mousedown", (e)=>{
+            
+        //     window.console.log("hello");
+        //     this.mouseDown = true;
+        //     this.mouseX = e.offsetX;
+        //     this.mouseY = e.offsetY;
+        //     // print(this.mouseY);
+        //     window.console.log(this.mouseX);
+        //     window.console.log(this.mouseY);
+        //     })
+
+        this.$refs.addEventListener("mousedown", (e)=>{
+            
+            window.console.log("hello");
+            this.mouseDown = true;
+            this.mouseX = e.offsetX;
+            this.mouseY = e.offsetY;
+            // print(this.mouseY);
+            window.console.log(this.mouseX);
+            window.console.log(this.mouseY);
+        })
+        this.$refs.canvas.addEventListener("mousedown", (e)=>{
+            
+            window.console.log("hello");
+            this.mouseDown = true;
+            this.mouseX = e.offsetX;
+            this.mouseY = e.offsetY;
+            // print(this.mouseY);
+            window.console.log(this.mouseX);
+            window.console.log(this.mouseY);
+        })
+        this.$refs.canvas.addEventListener("mouseup", ()=>{
+        });
+        // this.$refs.canvas.addEventListener("pointerdown", this.pointerdown);
+        // this.$refs.canvas.addEventListener("pointermove", this.pointermove);
+        // document.addEventListener("pointerup", this.pointerup);
+
+      }
+
+    },
+    computed: {
+      color: {
+        get () {
+          return this[this.type]
+        },
+        set (v) {
+          this[this.type] = v
+        },
       },
-      {
-        text: 'github',
-        href: 'https://github.com/vuetifyjs/vuetify',
+      showColor () {
+        if (typeof this.color === 'string') return this.color
+
+        return JSON.stringify(Object.keys(this.color).reduce((color, key) => {
+          color[key] = Number(this.color[key].toFixed(2))
+          return color
+        }, {}), null, 2)
       },
-      {
-        text: 'awesome-vuetify',
-        href: 'https://github.com/vuetifyjs/awesome-vuetify',
-      },
-    ],
-    importantLinks: [
-      {
-        text: 'Documentation',
-        href: 'https://vuetifyjs.com',
-      },
-      {
-        text: 'Chat',
-        href: 'https://community.vuetifyjs.com',
-      },
-      {
-        text: 'Made with Vuetify',
-        href: 'https://madewithvuejs.com/vuetify',
-      },
-      {
-        text: 'Twitter',
-        href: 'https://twitter.com/vuetifyjs',
-      },
-      {
-        text: 'Articles',
-        href: 'https://medium.com/vuetify',
-      },
-    ],
-    whatsNext: [
-      {
-        text: 'Explore components',
-        href: 'https://vuetifyjs.com/components/api-explorer',
-      },
-      {
-        text: 'Select a layout',
-        href: 'https://vuetifyjs.com/layout/pre-defined',
-      },
-      {
-        text: 'Frequently Asked Questions',
-        href: 'https://vuetifyjs.com/getting-started/frequently-asked-questions',
-      },
-    ],
-  }),
-};
+    },
+  }
 </script>
