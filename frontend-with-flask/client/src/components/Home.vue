@@ -66,7 +66,6 @@
     <v-layout>
       <Viewer3d/>
     </v-layout>
-
   </v-container>
 </template>
 
