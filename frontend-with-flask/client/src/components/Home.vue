@@ -22,7 +22,8 @@
          Clear
          <v-icon right>mdi-autorenew</v-icon> 
        </v-btn>
-       <v-btn class="my-4" block> 
+       <v-btn class="my-4" block
+       @click="toViewer"> 
          Submit
          <v-icon right>mdi-upload</v-icon> 
        </v-btn>
@@ -154,6 +155,9 @@ import Viewer3d from './Viewer3d';
         this.card_width,
         this.card_height
       );
+      },
+      toViewer() {
+        window.location.href = '/viewer';
       },
       drawit(){
         // capture that drawing inside of canvas
