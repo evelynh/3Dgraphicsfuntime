@@ -64,17 +64,25 @@
         </v-row>
       </v-layout>
     </v-layout>
+    <v-layout>
+      <Viewer3d/>
+    </v-layout>
+
   </v-container>
 </template>
 
 <script>
 import Raphael from "raphael";
 import axios from 'axios';
+import Viewer3d from './Viewer3d';
 
 // import VueColor from "vue-color";
 
   export default {
     name: 'Home',
+    components: {
+      Viewer3d,
+    },
     data: () => ({
       // types: ['hex', 'hexa', 'rgba', 'hsla', 'hsva'],
       type: 'hex',
