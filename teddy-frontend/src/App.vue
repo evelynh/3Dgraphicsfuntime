@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld';
+import HelloWorld from './components/Test';
 
 export default {
   name: 'App',
