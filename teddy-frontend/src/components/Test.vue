@@ -1,5 +1,7 @@
 <template>
-  <model-obj src="./public/windmill.obj"></model-obj>
+<div>
+  <model-obj src="windmill.obj"></model-obj>
+  </div>
 </template>
 <script>
 import { ModelObj } from 'vue-3d-model';
