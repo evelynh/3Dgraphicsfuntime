@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Home from '../components/Home.vue';
+import Viewer from '../components/Viewer3d.vue';
 
 Vue.use(Router);
 
@@ -12,6 +13,11 @@ export default new Router({
       path: '/',
       name: 'Home',
       component: Home,
+    },
+    {
+      path: '/viewer',
+      name: 'Viewer',
+      component: Viewer,
     }
   ],
 });

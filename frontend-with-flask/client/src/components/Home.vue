@@ -22,7 +22,8 @@
          Clear
          <v-icon right>mdi-autorenew</v-icon> 
        </v-btn>
-       <v-btn class="my-4" block> 
+       <v-btn class="my-4" block
+       @click="onSubmit"> 
          Submit
          <v-icon right>mdi-upload</v-icon> 
        </v-btn>
@@ -33,7 +34,6 @@
               ref="canvas"
               :width="card_width" 
               :height="card_height"
-              style="border: 1px black solid"
             ></div>
       </v-card>
      <v-layout column align-center justify-space-between fill-height>
@@ -63,6 +63,12 @@
           </v-col>
         </v-row>
       </v-layout>
+      <!-- <v-layout>
+        <p>{{ strokes }}</p>
+      </v-layout> -->
+    </v-layout>
+    <v-layout>
+      <Viewer3d/>
     </v-layout>
   </v-container>
 </template>
@@ -70,11 +76,15 @@
 <script>
 import Raphael from "raphael";
 import axios from 'axios';
+import Viewer3d from './Viewer3d';
 
 // import VueColor from "vue-color";
 
   export default {
     name: 'Home',
+    components: {
+      Viewer3d,
+    },
     data: () => ({
       // types: ['hex', 'hexa', 'rgba', 'hsla', 'hsva'],
       type: 'hex',
@@ -109,6 +119,26 @@ import axios from 'axios';
       slider: 5
     }),
     methods: {
+        sendStrokes(payload){
+          const path = 'http://localhost:5000/teddy';
+          axios.post(path, payload);
+
+          this.toViewer();
+
+            // .then(() => {
+            //   this.strokes = res.data.books;
+            // })
+            // .catch((error) => {
+            //   // eslint-disable-next-line
+            //   console.error(error);
+            // });
+        },
+        onSubmit(evt){
+          evt.preventDefault();
+          let payload = this.strokes;
+          window.console.log(payload);
+          this.sendStrokes(payload);
+        },
         getMessage() {
         const path = 'http://localhost:5000/';
         axios.get(path)
@@ -148,6 +178,10 @@ import axios from 'axios';
         this.card_width,
         this.card_height
       );
+      },
+      toViewer() {
+        // this.onSubmit();
+        window.location.href = '/viewer';
       },
       drawit(){
         // capture that drawing inside of canvas
