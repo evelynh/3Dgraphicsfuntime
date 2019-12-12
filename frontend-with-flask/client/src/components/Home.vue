@@ -27,8 +27,8 @@
          Submit
          <v-icon right>mdi-upload</v-icon> 
        </v-btn>
+           <MiniViewer/>
      </v-layout>
-    <MiniViewer/>
      <v-spacer></v-spacer>
       <v-card class="elevation-12" :width="card_width" :height="card_height">
             <div id="canvas"
@@ -77,12 +77,12 @@
 <script>
 import Raphael from "raphael";
 import axios from 'axios';
-import Viewer3d from './Viewer3d';
+import MiniViewer from './MiniViewer';
 // import VueColor from "vue-color";
   export default {
     name: 'Home',
     components: {
-      Viewer3d,
+      MiniViewer,
     },
     data: () => ({
       // types: ['hex', 'hexa', 'rgba', 'hsla', 'hsva'],
