@@ -126,10 +126,7 @@ def checkmerge(triangle, int_edge, int_edge_indices, vertices):
 	to_test_points = []
 	for i in triangle:
 		if i not in int_edge:
-			to_test += [list(vertices[i])]
-	# 		to_test_points += [i]
-	# print(to_test)
-	# print(to_test_points)
+			to_test += [list(vertices[i])
 	for i in range(0, len(to_test)):
 		x = to_test[i][0]
 		y = to_test[i][1]
@@ -179,7 +176,7 @@ def findinteraledge(triangle, neighbors):
 
 def junctionmidpoint(triangle, vertices):
 	'''
-		Find midpoint of junction triangle
+		Find midpoint of a triangle to merge with a junction triangle
 	'''
 	x_sum = 0
 	y_sum = 0 
@@ -192,6 +189,8 @@ def junctionmidpoint(triangle, vertices):
 def fantriangles(triangle, fanpoint, axis, index, int_edge, triangles, vertices):
 	'''
 		Fan triangles
+		fanpoint: point from which triangles are fanned
+		index: index of fanpoint in vertices
 	'''
 	temp = []
 	# check to make sure aren't creating triangle with internal edge
@@ -268,20 +267,16 @@ def fanning(triangles, neighbors, vertices, labels):
 	orig_triangles = []
 	new_triangles = []
 	axis = {}
-
+	
+	# Convert triangles array into Python list for ease of use
+	# orig_triangles: copy of inputted array of triangles
+	# new_triangles: final output (initially, a copy of orig_triangles)
 	for i in range(0, len(triangles)):
 		orig_triangles.append(list(triangles[i]))
 		new_triangles.append(list(triangles[i]))
 
 	for i in range(0, len(triangles)):
 		# We examine each terminal triangle
-		#if labels[i] == 2:
-		print("i=" + str(i))
-		print("ORIG")
-		print(orig_triangles)
-		print("nEW")
-		print(new_triangles)
-
 		if labels[str(list(triangles[i]))] == 2:
 			print(triangles[i])
 			# Find the internal edge	
@@ -295,22 +290,16 @@ def fanning(triangles, neighbors, vertices, labels):
 			terminate = False
 			while toMerge == True:
 				num_iterations += 1
-				print("iteration" + str(num_iterations))
-				# print(new_triangles)
-				# print(new_vertices)
-				print("current triangle")
-				print(curr_triangle)
+# 				print("current triangle")
+# 				print(curr_triangle)
 				int_edge, int_edge_indices = findinteraledge(curr_triangle, neighbors)
 
-				print("internal edge")
-				print(int_edge)
-
+# 				print("internal edge")
+# 				print(int_edge)
+				    
 				other_triangle = findother(curr_triangle, int_edge, new_triangles)
 
 				if other_triangle == []:
-					# other_triangle = findother(curr_triangle, int_edge, orig_triangles)
-					# terminate = True
-					print("fan special")
 					fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
 					if tuple(fanpoint) in axis:
 						print(tuple(fanpoint))
@@ -319,7 +308,6 @@ def fanning(triangles, neighbors, vertices, labels):
 						new_index = new_vertices.index(fanpoint)
 
 					else:
-						print(tuple(fanpoint))
 						axis[tuple(fanpoint)] = [int_edge[0]]
 						axis[tuple(fanpoint)].append(int_edge[1])
 						# Find index of fanpoint in new_vertices
@@ -331,13 +319,11 @@ def fanning(triangles, neighbors, vertices, labels):
 
 				print("other triangle")
 				print(other_triangle)
-				# Junction triangle
 				external_count = countexternal(other_triangle, neighbors)
 				print("external_count")
 				print(external_count)
+				#  If the triangle to be merged with is a junction triangle
 				if external_count == 0:
-					# Find the midpoint of the junction triangle
-					# fanpoint = junctionmidpoint(other_triangle)
 					fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
 					if tuple(fanpoint) in axis:
 						print(tuple(fanpoint))
@@ -356,14 +342,12 @@ def fanning(triangles, neighbors, vertices, labels):
 					break
 					# Replace junction triangle 
 					#new_triangles.remove(other_triangle)
-					#ew_triangles.append(other_triangle+[new_index])
+					#new_triangles.append(other_triangle+[new_index])
 				# 	break
-				# Sleeve triangle
+				# If the triangle to be merged with is a sleeve triangle
 				elif external_count == 1:
-				# if external_count <= 1:
-					# Check if you should merge; if so, merge
 					int_edge, int_edge_indices = findinteraledge(curr_triangle, neighbors)
-
+				    	# check if you should merge triangles
 					if checkmerge(curr_triangle, int_edge, int_edge_indices, vertices):
 						print("merge triangles 1")
 						merged_triangle = merge(curr_triangle, other_triangle)
@@ -434,7 +418,6 @@ def fanning(triangles, neighbors, vertices, labels):
 							# new_triangles = fantriangles(curr_triangle,fanpoint, new_index, new_triangles, new_vertices)
 							break
 					else:
-						print("fan special V2")
 						fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
 						if tuple(fanpoint) in axis:
 							print(tuple(fanpoint))
@@ -450,9 +433,9 @@ def fanning(triangles, neighbors, vertices, labels):
 							new_vertices = new_vertices +[fanpoint] 
 							new_index = len(new_vertices)-1
 						new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
-					# print(new_triangles)
 					break
-
+	# axis is a dictionary that maps a point on the chordal axis to its external edges
+	# it gets built during fanning and is used for elevation
 	return new_vertices, new_triangles, axis
 
 def retriangulate(old_faces, new_faces, vertices, axis, neighbors, labels):
@@ -591,10 +574,6 @@ def retriangulate(old_faces, new_faces, vertices, axis, neighbors, labels):
 					axis[tuple(other_midpoint)]=ext_point		
 
 	# Update the new_triangles to include retriangulated triangles
-	print("MAP")
-	print(updated_points)
-	print(updated_faces)
-	print(retri_mapping)
 	for tri in retri_mapping:
 		toAdd = retri_mapping[str(tri)]
 		list_tri = []
