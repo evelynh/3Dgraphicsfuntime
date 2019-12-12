@@ -14,7 +14,7 @@
         >
     </model-obj>
    <v-btn class="my-4" color="primary" block @click="handleBack"> GO BACK </v-btn>
-
+    <div> POSSIBLE ACTIONS: Panning, zooming, rotating around your object! </div>
 </v-container>
 </template>
 <script>
