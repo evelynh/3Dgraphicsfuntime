@@ -38,4 +38,4 @@ be tested the following ways:
 - To run the algorithm you can type: python3 generate_obj.py
 - If you want to see the result of inputting different points, in main create an array of array of 2D points and 
 pass it into the teddy algorithm. 
-The algorithm will generate an .obj file that you can view using applications like blender.
+The algorithm will generate a result.obj file that you can view using applications like blender.
