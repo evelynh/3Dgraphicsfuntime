@@ -76,7 +76,537 @@ def label(triangles, neighbors):
 	
     print("-----labels-----")
 	return triangle_labels;
+def midpoint(i1, i2, vertices):
+	'''
+		Find the midpoint between two points
+		i1 = Label for point 1
+		i2 = Label for point 2
+		vertices = array that gives correspondence between label and actual point
+	'''
+	A = vertices[i1]
+	B = vertices[i2]
+	return [(A[0]+B[0])/2, (A[1]+B[1])/2]
+def chordalaxis(triangles, neighbors, vertices):
+	'''
+		Find the chordal axis
+	'''
+	ca = []	
+	for tri in triangles:
+		for i in range(0, len(tri)-1):
+			if isExternal(tri[i], tri[i+1], neighbors) == False:
+					toAdd = midpoint(tri[0], tri[1], vertices)
+					if toAdd not in ca:
+						print(tri[i], tri[i+1])
+						ca += [toAdd]
+		if isExternal(tri[0], tri[len(tri)-1], neighbors) == False:
+				toAdd = midpoint(tri[0], tri[len(tri)-1], vertices)
+				if toAdd not in ca:
+					print(tri[0], tri[len(i)-1])
+					ca += [toAdd]
+	print("-----chordal axis-----")
+	return ca
+def nonedgepoint_index(indices):
+	'''
+		Find the 3rd point index given the two other points
+	'''
+	if indices == [0, 1]:
+		return 2
+	elif indices ==  [1, 2]:
+		return 0
+	elif indices == [2,0]:
+		return 1
+def checkmerge(triangle, int_edge, int_edge_indices, vertices):
+	'''
+		Check if should merge sleeve triangle per Teddy algorithm
+	'''
+	circle_center = midpoint(int_edge[0], int_edge[1], vertices)
+	radius = distance(vertices[int_edge[0]], circle_center)
+	to_test = []
+	to_test_points = []
+	for i in triangle:
+		if i not in int_edge:
+			to_test += [list(vertices[i])]
+	# 		to_test_points += [i]
+	# print(to_test)
+	# print(to_test_points)
+	for i in range(0, len(to_test)):
+		x = to_test[i][0]
+		y = to_test[i][1]
+		if ((x - circle_center[0])**2 + (y - circle_center[1])**2) > radius**2:
+			return False
+	return True
 
+def findother(triangle, int_edge, triangles):
+	'''
+		Find the other triangle that shares the same internal edge
+	'''
+	other = []
+	for i in range(0, len(triangles)):
+		# print(triangles[i])
+		if triangles[i] != triangle:
+			if (int_edge[0] in triangles[i]) and (int_edge[1] in triangles[i]):
+				other = triangles[i]
+	return other
+
+def merge(triangle, other):
+	'''
+		Merge two triangles
+	'''
+	combined = np.concatenate((triangle, other), axis=None)	
+	new_triangle = [] 
+	for num in combined: 
+		if num not in new_triangle: 
+			new_triangle.append(num)
+	new_triangle.sort()  
+	return new_triangle
+
+def findinteraledge(triangle, neighbors):
+	'''
+		Find internal edge of triangle
+	'''
+	# print("fei")
+	int_edge = []
+	int_edge_indices = []
+	for i in range(0, len(triangle)-1):
+		if isExternal(triangle[i], triangle[i+1], neighbors) == False:
+			# print([triangle[i], triangle[i+1]], [i, i+1])
+			return [triangle[i], triangle[i+1]], [i, i+1]
+	if isExternal(triangle[len(triangle)-1], triangle[0], neighbors) == False:
+		# print([triangle[len(triangle)-1], triangle[0]], [len(triangle)-1, 0])
+		return [triangle[len(triangle)-1], triangle[0]], [len(triangle)-1, 0]
+	return None 
+
+def junctionmidpoint(triangle, vertices):
+	'''
+		Find midpoint of junction triangle
+	'''
+	x_sum = 0
+	y_sum = 0 
+	num_sides = length(triangle)
+	for i in range(0, len(vertices)):
+		x_sum += vertices[triangle[i]][0]
+		y_sum += vertices[triangle[i]][1]
+	return [x_sum/num_sides, y_sum/num_sides]
+
+def fantriangles(triangle, fanpoint, axis, index, int_edge, triangles, vertices):
+	'''
+		Fan triangles
+	'''
+	temp = []
+	# check to make sure aren't creating triangle with internal edge
+	# check then add wrap around case i.e. [5, 0, index]
+	for i in range(0, len(triangles)):
+		if triangles[i] != triangle:
+			temp.append(triangles[i])
+	new_triangles = temp
+	for i in range(0, len(triangle)-1):
+		if [triangle[i],triangle[i+1]] != int_edge and [triangle[i],triangle[i+1]] != int_edge.reverse():
+			fanned_triangle = [triangle[i], triangle[i+1], index]
+			if tuple(fanpoint) in axis:
+				axis[tuple(fanpoint)].append(triangle[i])
+				axis[tuple(fanpoint)].append(triangle[i+1])
+			else:
+				axis[tuple(fanpoint)] = [triangle[i]]
+				axis[tuple(fanpoint)].append(triangle[i+1])
+			# print(fanned_triangle)
+			new_triangles.append(fanned_triangle)
+	if [triangle[0],triangle[len(triangle)-1]] != int_edge and [triangle[i],triangle[i+1]] != int_edge.reverse():
+			fanned_triangle = [triangle[0],triangle[len(triangle)-1], index]
+			new_triangles.append(fanned_triangle)
+			if tuple(fanpoint) in axis:
+				axis[tuple(fanpoint)].append(triangle[0])
+				axis[tuple(fanpoint)].append(triangle[len(triangle)-1])
+			else:
+				axis[tuple(fanpoint)] = [triangle[0]]
+				axis[tuple(fanpoint)].append(triangle[len(triangle)-1])
+	for pair in axis:
+		dup_array = axis[pair]
+		remove_dup = set(dup_array)
+		axis[pair] = list(remove_dup)
+	return new_triangles, axis 
+
+def intersection(lst1, lst2):
+	'''
+		Find intersection of two lists
+	'''
+	# print("------------------")
+	# print("intersection")
+	toret = []
+	# print(lst1, lst2)
+	if len(lst1) > len(lst2):
+		for i in range(0, len(lst1)):
+			if lst1[i] in lst2:
+				print(i, lst1[i])
+				toret.append(lst1[i])
+	else:
+		for i in range(0, len(lst2)):
+			if lst2[i] in lst1:
+				print(i, lst2[i])
+				toret.append(lst2[i])
+	# print("toret")
+	# print(toret)
+	# print("---------------------")
+	return toret
+def recalc_chordalaxis(old_points, new_points, old_faces, new_faces, neighbors):
+	'''
+		Recalculate chordal axis after fanning
+	'''
+	remain_points = intersection(old_points, new_points)
+	remain_faces = intersection(old_faces, new_faces)
+	chordal_axis = chordalaxis(remain_faces, neighbors, remain_points)
+	return chordal_axis
+
+def fanning(triangles, neighbors, vertices, labels):
+	'''
+		Fan triangles so chordal axis can be pruned
+	'''
+	print("FANNING")
+	new_vertices = []
+	for i in range(0, len(vertices)):
+		new_vertices.append(list(vertices[i]))
+	orig_triangles = []
+	new_triangles = []
+	axis = {}
+
+	for i in range(0, len(triangles)):
+		orig_triangles.append(list(triangles[i]))
+		new_triangles.append(list(triangles[i]))
+
+	for i in range(0, len(triangles)):
+		# We examine each terminal triangle
+		#if labels[i] == 2:
+		print("i=" + str(i))
+		print("ORIG")
+		print(orig_triangles)
+		print("nEW")
+		print(new_triangles)
+
+		if labels[str(list(triangles[i]))] == 2:
+			print(triangles[i])
+			# Find the internal edge	
+			int_edge, int_edge_indices = findinteraledge(orig_triangles[i], neighbors)
+			curr_triangle = orig_triangles[i]
+			curr_triangle_index = i
+			if curr_triangle not in new_triangles:
+				continue
+			toMerge = True
+			num_iterations = 0
+			terminate = False
+			while toMerge == True:
+				num_iterations += 1
+				print("iteration" + str(num_iterations))
+				# print(new_triangles)
+				# print(new_vertices)
+				print("current triangle")
+				print(curr_triangle)
+				int_edge, int_edge_indices = findinteraledge(curr_triangle, neighbors)
+
+				print("internal edge")
+				print(int_edge)
+
+				other_triangle = findother(curr_triangle, int_edge, new_triangles)
+
+				if other_triangle == []:
+					# other_triangle = findother(curr_triangle, int_edge, orig_triangles)
+					# terminate = True
+					print("fan special")
+					fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
+					if tuple(fanpoint) in axis:
+						print(tuple(fanpoint))
+						axis[tuple(fanpoint)].append(int_edge[0])
+						axis[tuple(fanpoint)].append(int_edge[1])
+						new_index = new_vertices.index(fanpoint)
+
+					else:
+						print(tuple(fanpoint))
+						axis[tuple(fanpoint)] = [int_edge[0]]
+						axis[tuple(fanpoint)].append(int_edge[1])
+						# Find index of fanpoint in new_vertices
+						new_vertices = new_vertices +[fanpoint] 
+						new_index = len(new_vertices)-1
+		 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+					# print(new_triangles)
+					break
+
+				print("other triangle")
+				print(other_triangle)
+				# Junction triangle
+				external_count = countexternal(other_triangle, neighbors)
+				print("external_count")
+				print(external_count)
+				if external_count == 0:
+					# Find the midpoint of the junction triangle
+					# fanpoint = junctionmidpoint(other_triangle)
+					fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
+					if tuple(fanpoint) in axis:
+						print(tuple(fanpoint))
+						axis[tuple(fanpoint)].append(int_edge[0])
+						axis[tuple(fanpoint)].append(int_edge[1])
+						new_index = new_vertices.index(fanpoint)
+
+					else:
+						print(tuple(fanpoint))
+						axis[tuple(fanpoint)] = [int_edge[0]]
+						axis[tuple(fanpoint)].append(int_edge[1])
+						# Find index of fanpoint in new_vertices
+						new_vertices = new_vertices +[fanpoint] 
+						new_index = len(new_vertices)-1
+		 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+		 	 	 	break
+					# Replace junction triangle 
+					#new_triangles.remove(other_triangle)
+					#ew_triangles.append(other_triangle+[new_index])
+				# 	break
+				# Sleeve triangle
+				elif external_count == 1:
+				# if external_count <= 1:
+					# Check if you should merge; if so, merge
+					int_edge, int_edge_indices = findinteraledge(curr_triangle, neighbors)
+
+					if checkmerge(curr_triangle, int_edge, int_edge_indices, vertices):
+						print("merge triangles 1")
+						merged_triangle = merge(curr_triangle, other_triangle)
+						# int_edge, int_edge_indices = findinteraledge(curr_triangle, neighbors)
+						# Remove unmerged triangles 
+						# if other_triangle in new_triangles:
+						new_triangles.remove(other_triangle)
+						new_triangles.remove(curr_triangle)
+						curr_triangle = merged_triangle						
+						# Add current triangle
+						new_triangles.append(curr_triangle)
+					# Otherwise, stop and fan
+					else:
+						print("fan triangles 1")
+						fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
+						if tuple(fanpoint) in axis:
+							print(tuple(fanpoint))
+							axis[tuple(fanpoint)].append(int_edge[0])
+							axis[tuple(fanpoint)].append(int_edge[1])
+						else:
+							print(tuple(fanpoint))
+							axis[tuple(fanpoint)] = [int_edge[0]]
+							axis[tuple(fanpoint)].append(int_edge[1])
+						new_vertices = new_vertices +[fanpoint] 
+						new_index = len(new_vertices)-1
+						# Fan 
+ 	 	 	 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+						print(new_triangles)
+						break
+
+				else:
+					if num_iterations > 1:
+						int_edge, int_edge_indices = findinteraledge(curr_triangle, neighbors)
+						if checkmerge(curr_triangle, int_edge, int_edge_indices, vertices):
+							merged_triangle = merge(curr_triangle, other_triangle)
+							print(int_edge)
+							# int_edge, int_edge_indices = findinteraledge(curr_triangle, neighbors)
+							# Remove unmerged triangles 
+							new_triangles.remove(other_triangle)
+							new_triangles.remove(curr_triangle)
+							curr_triangle = merged_triangle						
+							# Add current triangle
+							new_triangles.append(curr_triangle)
+						# Otherwise, stop and fan
+						else:
+							print("FAN")
+							# fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
+							# new_vertices = new_vertices +[fanpoint]
+							# new_index = len(new_vertices)-1
+							# # Fan
+							# new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+							fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
+							if tuple(fanpoint) in axis:
+								print(tuple(fanpoint))
+								axis[tuple(fanpoint)].append(int_edge[0])
+								axis[tuple(fanpoint)].append(int_edge[1])
+								new_index = new_vertices.index(fanpoint)
+
+							else:
+								print(tuple(fanpoint))
+								axis[tuple(fanpoint)] = [int_edge[0]]
+								axis[tuple(fanpoint)].append(int_edge[1])
+								# Find index of fanpoint in new_vertices
+								new_vertices = new_vertices +[fanpoint] 
+								new_index = len(new_vertices)-1
+				 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+
+							# new_triangles = fantriangles(curr_triangle,fanpoint, new_index, new_triangles, new_vertices)
+							break
+					else:
+						print("fan special V2")
+						fanpoint = midpoint(int_edge[0], int_edge[1], vertices)
+						if tuple(fanpoint) in axis:
+							print(tuple(fanpoint))
+							axis[tuple(fanpoint)].append(int_edge[0])
+							axis[tuple(fanpoint)].append(int_edge[1])
+							new_index = new_vertices.index(fanpoint)
+
+						else:
+							print(tuple(fanpoint))
+							axis[tuple(fanpoint)] = [int_edge[0]]
+							axis[tuple(fanpoint)].append(int_edge[1])
+							# Find index of fanpoint in new_vertices
+							new_vertices = new_vertices +[fanpoint] 
+							new_index = len(new_vertices)-1
+			 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+					# print(new_triangles)
+					break
+
+	return new_vertices, new_triangles, axis
+
+def retriangulate(old_faces, new_faces, vertices, axis, neighbors, labels):
+	'''
+		Retriangulate remaining triangles
+	'''
+	print(old_faces)
+	print(new_faces)
+	retri_faces = intersection(old_faces, new_faces)
+	print("RETRI")
+	print(retri_faces)
+
+	retri_mapping = {}
+	updated_faces = new_faces
+	updated_points = vertices
+	for tri in retri_faces: 
+		# if a sleeve triangle
+		if labels[str(tri)] == 1:
+			# find the external edge
+			external_edge = []
+			for i in range(0, len(tri)-1):
+				if isExternal(tri[i], tri[i+1], neighbors) == True:
+					external_edge = [tri[i], tri[i+1]]
+			if isExternal(tri[0], tri[len(tri)-1], neighbors) == True:
+				external_edge = [tri[0], tri[len(tri)-1]]
+			other = copy.deepcopy(tri)
+			other.remove(external_edge[0])
+			other.remove(external_edge[1])
+
+			m_a = midpoint(external_edge[0], other[0], vertices)
+			m_b = midpoint(external_edge[1], other[0], vertices)
+			# triangulate [m_a, m_b, external_edge[0], external_edge[1]] and [m_a, m_b, other]
+			# trap_coords = np.array([m_a, m_b, vertices[external_edge[0]], vertices[external_edge[1]]])
+			# vert_map = {}
+			# vert_map[0] = len(vertices);
+			a_i = -1
+			for i in range(0, len(updated_points)):
+				if updated_points[i] == m_a:
+					a_i = i
+			if a_i == -1:
+				updated_points.append(m_a)
+				a_i = len(updated_points)-1
+			
+			b_i = -1
+			for i in range(0, len(updated_points)):
+				if updated_points[i] == m_b:
+					b_i = i
+			if b_i == -1:
+				updated_points.append(m_b)
+				b_i = len(updated_points)-1
+			
+			# Create a mapping between the original triangle and the newly triangulated triangle so that 
+			# we can later replace the original triangle
+			retri_mapping[str(tri)] = []
+			retri_mapping[str(tri)].append([a_i, b_i, external_edge[0]])
+			retri_mapping[str(tri)].append([b_i, external_edge[0], external_edge[1]])
+			retri_mapping[str(tri)].append([a_i, b_i, other[0]])
+			if tuple(m_b) in axis:
+				axis[tuple(m_b)].append(external_edge[0])
+			else:
+				axis[tuple(m_b)]=external_edge[0]
+		if labels[str(tri)] == 1:
+					# find the external edge
+					external_edge = []
+					for i in range(0, len(tri)-1):
+						if isExternal(tri[i], tri[i+1], neighbors) == True:
+							external_edge = [tri[i], tri[i+1]]
+					if isExternal(tri[0], tri[len(tri)-1], neighbors) == True:
+						external_edge = [tri[0], tri[len(tri)-1]]
+					other = copy.deepcopy(tri)
+					other.remove(external_edge[0])
+					other.remove(external_edge[1])
+
+					m_a = midpoint(external_edge[0], other[0], vertices)
+					m_b = midpoint(external_edge[1], other[0], vertices)
+					# triangulate [m_a, m_b, external_edge[0], external_edge[1]] and [m_a, m_b, other]
+					# trap_coords = np.array([m_a, m_b, vertices[external_edge[0]], vertices[external_edge[1]]])
+					# vert_map = {}
+					# vert_map[0] = len(vertices);
+					a_i = -1
+					for i in range(0, len(updated_points)):
+						if updated_points[i] == m_a:
+							a_i = i
+					if a_i == -1:
+						updated_points.append(m_a)
+						a_i = len(updated_points)-1
+					
+					b_i = -1
+					for i in range(0, len(updated_points)):
+						if updated_points[i] == m_b:
+							b_i = i
+					if b_i == -1:
+						updated_points.append(m_b)
+						b_i = len(updated_points)-1
+					
+					# Create a mapping between the original triangle and the newly triangulated triangle so that 
+					# we can later replace the original triangle
+					retri_mapping[str(tri)] = []
+					retri_mapping[str(tri)].append([a_i, b_i, external_edge[0]])
+					retri_mapping[str(tri)].append([b_i, external_edge[0], external_edge[1]])
+					retri_mapping[str(tri)].append([a_i, b_i, other[0]])
+					if tuple(m_b) in axis:
+						axis[tuple(m_b)].append(external_edge[0])
+					else:
+						axis[tuple(m_b)]=external_edge[0]
+
+		# if it's a junction triangle
+		elif labels[str(tri)] == 0:
+			# get the midpoints
+			# fi
+			ext_point = -1
+			for i in range(0, len(triangle)):
+				if triangle[i] in neighbors:
+					ext_point = triangle[i]
+					break
+			if ext_point != -1:
+				other_points = copy.deepcopy(tri)
+				other_points.remove(ext_point)
+				other_midpoint = (other_points[0], other_points[1], vertices)
+				
+				om_i = -1
+				for i in range(0, len(updated_points)):
+					if updated_points[i] == other_midpoint:
+						om_i = i
+				if om_i == -1:
+					updated_points.append(om_i)
+					om_i = len(updated_points)-1
+
+				retri_mapping[str(tri)] = []
+				retri_mapping[str(tri)].append([om_i, ext_point, other_points[0]])
+				retri_mapping[str(tri)].append([om_i, ext_point, other_points[1]])
+				# axis[tuple(other_midpoint)].append(ext_point)
+				if tuple(other_midpoint) in axis:
+					axis[tuple(other_midpoint)].append(ext_point)
+				else:
+					axis[tuple(other_midpoint)]=ext_point		
+
+	# Update the new_triangles to include retriangulated triangles
+	print("MAP")
+	print(updated_points)
+	print(updated_faces)
+	print(retri_mapping)
+	for tri in retri_mapping:
+		toAdd = retri_mapping[str(tri)]
+		list_tri = []
+		for i in list(tri):
+			if i in "0123456789":
+				list_tri.append(int(i))
+		updated_faces.remove(list_tri)
+		for x in toAdd:
+			updated_faces.append(x)
+	return updated_faces, updated_points
+		# if a junction triangle 
+		#if labels[str(tri)] == 0:
+		
 def distinct_pairs(arr):
     arr_len = len(arr);
     ret_arr = [];
