@@ -58,24 +58,25 @@ def countexternal(triangle, neighbors):
 	return external_edges
 
 def label(triangles, neighbors):
-    '''
-        Label each triangle as terminal, sleeve, or junction
-        triangles = array of arrays containing vertices of triangles
-        neighbors = dictinary of external vertices and edges
-        return dictionary mapping triangle to the number of external edges it has
+	'''
+		Label each triangle as terminal, sleeve, or junction
+		triangles = array of arrays containing vertices of triangles
+		neighbors = dictinary of external vertices and edges
+		return dictionary mapping triangle to the number of external edges it has
 
-        terminal: 2 external edges        2
-        sleeve:   1 external edges        1
-        junction: 0 external edges        0
-    '''
-	num_triangles = len(triangles);
+		terminal: 2 external edges        2
+		sleeve:   1 external edges        1
+		junction: 0 external edges        0
+	'''
+	num_triangles = len(triangles)
 	triangle_labels = {}
 	for i in range(0, num_triangles):
 		external_edges = countexternal(triangles[i], neighbors)
 		triangle_labels[str(list(triangles[i]))] = external_edges
-	
-    print("-----labels-----")
+
+	print("-----labels-----")
 	return triangle_labels;
+
 def midpoint(i1, i2, vertices):
 	'''
 		Find the midpoint between two points
@@ -324,7 +325,7 @@ def fanning(triangles, neighbors, vertices, labels):
 						# Find index of fanpoint in new_vertices
 						new_vertices = new_vertices +[fanpoint] 
 						new_index = len(new_vertices)-1
-		 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+					new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
 					# print(new_triangles)
 					break
 
@@ -351,8 +352,8 @@ def fanning(triangles, neighbors, vertices, labels):
 						# Find index of fanpoint in new_vertices
 						new_vertices = new_vertices +[fanpoint] 
 						new_index = len(new_vertices)-1
-		 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
-		 	 	 	break
+					new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+					break
 					# Replace junction triangle 
 					#new_triangles.remove(other_triangle)
 					#ew_triangles.append(other_triangle+[new_index])
@@ -389,7 +390,7 @@ def fanning(triangles, neighbors, vertices, labels):
 						new_vertices = new_vertices +[fanpoint] 
 						new_index = len(new_vertices)-1
 						# Fan 
- 	 	 	 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+						new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
 						print(new_triangles)
 						break
 
@@ -428,7 +429,7 @@ def fanning(triangles, neighbors, vertices, labels):
 								# Find index of fanpoint in new_vertices
 								new_vertices = new_vertices +[fanpoint] 
 								new_index = len(new_vertices)-1
-				 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+							new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
 
 							# new_triangles = fantriangles(curr_triangle,fanpoint, new_index, new_triangles, new_vertices)
 							break
@@ -448,7 +449,7 @@ def fanning(triangles, neighbors, vertices, labels):
 							# Find index of fanpoint in new_vertices
 							new_vertices = new_vertices +[fanpoint] 
 							new_index = len(new_vertices)-1
-			 	 	 	new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
+						new_triangles, axis = fantriangles(curr_triangle,fanpoint, axis, new_index, int_edge,new_triangles, new_vertices)
 					# print(new_triangles)
 					break
 
@@ -677,63 +678,70 @@ def elevate(vertices, faces, axis, neighbors):
     final_mesh = pymesh.form_mesh(vertices, faces);
     pymesh.save_mesh("result.obj", final_mesh, ascii=True);
     return 0;
-    
+
+def teddy(points):
+	hex_tri = pymesh.triangle();
+	hex_tri.points = points;
+	hex_tri.split_boundary = False;
+	hex_tri.verbosity = 0;
+	hex_tri.keep_convex_hull = True;
+	hex_tri.run();
+	print("-----points-----");
+	print(hex_tri.points);
+	print("-----vertices-----");
+	print(hex_tri.vertices);
+	print("-----faces-----");
+	print(hex_tri.faces);
+
+	hex_mesh_tri = hex_tri.mesh;
+	neighbors = construct_neighbors(hex_tri.points);
+	print(neighbors);
+	labeled_triangles = label(hex_tri.faces, neighbors);
+	print(labeled_triangles);
+
+	ret = fanning(hex_tri.faces, neighbors, hex_tri.points, labeled_triangles)
+	hex_new_points = ret[0]
+	hex_new_faces = ret[1]
+	hex_axis = ret[2]
+
+	hex_old_points  = []
+	hex_old_faces = []
+	for i in range(0, len(hex_tri.points)):
+		hex_old_points.append(list(hex_tri.points[i]))
+
+	for i in range(0, len(hex_tri.faces)):
+		hex_old_faces.append(list(hex_tri.faces[i]))
+	print("old points {}".format(hex_old_points))
+	updated_faces, updated_points = retriangulate(hex_old_faces, hex_new_faces, hex_new_points, hex_axis, neighbors, labeled_triangles)
+	elevate(updated_points, updated_faces, hex_axis, neighbors);
+
 def main():
-    print("------HEX------");
-    hex = np.array([
- 		[0,0],
- 		[.5, 3],
- 		[2,5],
- 		[5,6],
- 		[6.5,3],
- 		[7,0]
- 	]);
-    hex_tri = pymesh.triangle();
-    hex_tri.points = hex;
-    hex_tri.split_boundary = False;
-    hex_tri.verbosity = 0;
-    hex_tri.keep_convex_hull = True;
-    hex_tri.run();
-    print("-----points-----");
-    print(hex_tri.points);
-    print("-----vertices-----");
-    print(hex_tri.vertices);
-    print("-----faces-----");
-    print(hex_tri.faces);
+	print("------HEX------");
+	hex = [[0,0],
+		[.5, 3],
+		[2,5],
+		[5,6],
+		[6.5,3],
+		[7,0]]
+	hex = np.asarray(hex)
+	teddy(hex);
 
-    hex_mesh_tri = hex_tri.mesh;
-    neighbors = construct_neighbors(hex_tri.points);
-    print(neighbors);
-    labeled_triangles = label(hex_tri.faces, neighbors);
-    print(labeled_triangles);
-    vertices = [[0.0, 0.0], 
-                [0.5, 3.0], 
-                [2.0, 5.0], 
-                [5.0, 6.0], 
-                [6.5, 3.0], 
-                [7.0, 0.0], 
-                [3.75, 1.5], 
-                [3.5, 3.0]];
-    faces = [[7, 6, 4],
-            [6, 4, 5],
-            [7, 6, 1],
-            [1, 0, 6], 
-            [5, 0, 6], 
-            [1, 2, 7], 
-            [2, 3, 7], 
-            [3, 4, 7]];
-    axis = {(3.5, 3.0) : [1, 2, 3, 4],
-            (3.75, 1.5) : [0, 5, 1]};
+	# print("------PENT------")
+	# pent = [[0.0, 0.0], 
+	# 	[1.0, 0.0], 
+	# 	[1.0, 1.0], 
+	# 	[0.5, 1.5], 
+	# 	[0.0, 1.0]]
+	# pent = np.asarray(pent)
+	# teddy(pent);
 
-    elevate(vertices, faces, axis, neighbors);
-
-    print("------PENT------")
-    axis = {(0.5, 1.0): [0, 1, 2, 4]}
-    faces = [[4, 5, 3], [3, 5, 2], [0, 1, 5], [1, 2, 5], [0, 4, 5]]
-    points = [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.5, 1.5], [0.0, 1.0], [0.5, 1.0]]
-    neighbors = {0: (4, 1), 1: (0, 2), 2: (1, 3), 3: (2, 4), 4: (3, 0)}
-
-    elevate(points, faces, axis, neighbors)
+	sq = [[0, 0],
+		[1, 0],
+		[1, 1],
+		[0, 1]]
+	sq = np.asarray(sq)
+	teddy(sq)
+	
 
 if __name__== "__main__":
   main()
