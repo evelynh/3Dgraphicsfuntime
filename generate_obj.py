@@ -735,12 +735,12 @@ def main():
 	# pent = np.asarray(pent)
 	# teddy(pent);
 
-	sq = [[0, 0],
-		[1, 0],
-		[1, 1],
-		[0, 1]]
-	sq = np.asarray(sq)
-	teddy(sq)
+	# sq = [[0, 0],
+	# 	[1, 0],
+	# 	[1, 1],
+	# 	[0, 1]]
+	# sq = np.asarray(sq)
+	# teddy(sq)
 	
 
 if __name__== "__main__":
