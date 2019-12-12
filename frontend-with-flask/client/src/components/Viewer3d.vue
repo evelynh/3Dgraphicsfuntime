@@ -1,27 +1,21 @@
 <template>
-<div>
-    <v-btn class="my-4" block> COLOUR </v-btn>
-    <v-color-picker
-      v-model="color"
-      :hide-canvas="true"
-      :hide-inputs="true"
-      :hide-mode-switch="true"
-      :mode.sync="mode"
-      :show-swatches="false"
-      @change="changeColor($event)"
-      class="mx-auto"
-    ></v-color-picker>
+<v-container>
+    BACKGROUND COLOUR: 
+    <div class="button-group">
+        <v-btn text small color="black" @click="changeBlack">BLACK</v-btn>
+        <v-btn text small color="grey" @click="changeWhite">WHITE</v-btn>
+        <v-btn text small color="blue" @click="changeBlue">BLUE</v-btn>
+    </div>
 
- <!-- <div id="viewer"> -->
     <model-obj 
-    :backgroundColor="bgColor"
-    :backgroundAlpha="bgAlpha"
-    src="windmill.obj">
+        :backgroundColor="bgColor"
+        src="windmill.obj"
+        margin= "10px"
+        >
     </model-obj>
-<!-- </div> -->
-<div>
-</div>
-  </div>
+   <v-btn class="my-4" color="primary" block @click="handleBack"> GO BACK </v-btn>
+
+</v-container>
 </template>
 <script>
 import { ModelObj } from 'vue-3d-model';
@@ -29,23 +23,28 @@ export default {
   components: { ModelObj },
   data () {
     return {
-        bgColor: 'black',
-        bgAlpha: 0.5
+        bgColor: '#ADD8E6',
     }
     },
     methods: {
-        changeColor(value) {
-            this.bgColor = value;
-            window.console.log(this.bgColor);
+        handleBack() {
+            window.location.href = '/';
+        },
+        changeBlack() {
+            this.bgColor = "black";
+        },
+        changeWhite() {
+            this.bgColor = "white";
+        }, 
+        changeBlue() {
+            this.bgColor = "#ADD8E6";
         }
     }
 }
 </script>
 
 <style>
-#viewer{
-    width: "75%";
-    /* border: solid 2px black; */
-    /* background-color: aquamarine; */
+#button-group {
+    padding-bottom: 10px;
 }
 </style>
