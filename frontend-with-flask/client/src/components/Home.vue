@@ -23,12 +23,12 @@
          <v-icon right>mdi-autorenew</v-icon> 
        </v-btn>
        <v-btn class="my-4" block
-       @click="toViewer"> 
+       @click="onSubmit"> 
          Submit
          <v-icon right>mdi-upload</v-icon> 
        </v-btn>
-        <MiniViewer/>
      </v-layout>
+    <MiniViewer/>
      <v-spacer></v-spacer>
       <v-card class="elevation-12" :width="card_width" :height="card_height">
             <div id="canvas"
@@ -64,26 +64,25 @@
           </v-col>
         </v-row>
       </v-layout>
-      
+      <!-- <v-layout>
+        <p>{{ strokes }}</p>
+      </v-layout> -->
     </v-layout>
     <v-layout>
-     
+      <Viewer3d/>
     </v-layout>
-
   </v-container>
 </template>
 
 <script>
 import Raphael from "raphael";
 import axios from 'axios';
-import MiniViewer from './MiniViewer';
-
+import Viewer3d from './Viewer3d';
 // import VueColor from "vue-color";
-
   export default {
     name: 'Home',
     components: {
-      MiniViewer,
+      Viewer3d,
     },
     data: () => ({
       // types: ['hex', 'hexa', 'rgba', 'hsla', 'hsva'],
@@ -119,6 +118,24 @@ import MiniViewer from './MiniViewer';
       slider: 5
     }),
     methods: {
+        sendStrokes(payload){
+          const path = 'http://localhost:5000/teddy';
+          axios.post(path, payload);
+          this.toViewer();
+            // .then(() => {
+            //   this.strokes = res.data.books;
+            // })
+            // .catch((error) => {
+            //   // eslint-disable-next-line
+            //   console.error(error);
+            // });
+        },
+        onSubmit(evt){
+          evt.preventDefault();
+          let payload = this.strokes;
+          window.console.log(payload);
+          this.sendStrokes(payload);
+        },
         getMessage() {
         const path = 'http://localhost:5000/';
         axios.get(path)
@@ -160,15 +177,14 @@ import MiniViewer from './MiniViewer';
       );
       },
       toViewer() {
+        // this.onSubmit();
         window.location.href = '/viewer';
       },
       drawit(){
         // capture that drawing inside of canvas
         // this.is_drawing = true;
         this.is_outside_canvas = false;
-
         // var finalPath = newPath;
-
         if(this.first == true)
         {
           // clear canvas, making it limited to only one stroke
@@ -176,20 +192,15 @@ import MiniViewer from './MiniViewer';
           // set x and y values
           let x = this.round_float(this.mouseX);
           let y = this.round_float(this.mouseY);
-
           this.pathString = 'M' + x + ', ' + y + ' l0, 0';
-
           this.strokes.push([x, y]);
           // add a newPath to
           this.newPath = this.paper.path(this.pathString);
-
-
           this.newPath.attr({
             'stroke': this.hex,
             'stroke-width': this.stroke_width
           });
           
-
           // indicate this is no longer the first point
           this.first = false;
         }
@@ -199,7 +210,6 @@ import MiniViewer from './MiniViewer';
           // set x and y
           let newx = this.round_float(this.mouseX);
           let newy = this.round_float(this.mouseY);
-
           // only send every 5 strokes or so--> don't want too many verticies 
           if (this.counter % 2 === 0)
           {
@@ -207,9 +217,7 @@ import MiniViewer from './MiniViewer';
             this.strokes.push([newx, newy]);    
           }
           this.pathString+=('l' + (newx - this.prevX) + ',' + (newy - this.prevY));
-
           this.newPath = this.paper.path(this.pathString);
-
           this.newPath.attr({
             'stroke': this.hex,
             'stroke-width': this.stroke_width
@@ -230,13 +238,10 @@ import MiniViewer from './MiniViewer';
             this.first = true;
             this.mouseUp = true;
         });
-
-
         this.$refs.canvas.addEventListener("mousedown", (e)=>{
           // reset strokes array
           this.strokes = [];
           this.counter = 0;
-
           // set boleans
           this.mouseDown = false;
           this.first = true;
@@ -247,10 +252,8 @@ import MiniViewer from './MiniViewer';
             this.mouseUp = false;
             this.mouseX = e.offsetX;
             this.mouseY = e.offsetY;
-
             this.drawit();
         });
-
         this.$refs.canvas.addEventListener("mousemove", (e)=> {
               this.counter += 1;
               this.prevX = this.mouseX;
@@ -263,35 +266,25 @@ import MiniViewer from './MiniViewer';
                 this.drawit();
               }
             });
-
         // check for out of canvas
         this.$refs.canvas.addEventListener("pointerleave", ()=>{
            this.pathString += 'z';
-
            this.newPath = this.paper.path(this.pathString);
-
             this.newPath.attr({
             'stroke': this.hex,
             'stroke-width': this.stroke_width
           });
           
-
           this.mouseDown = false;
           this.mouseUp = true;
-
           // return strokes
           window.console.log("Final Strokes");
           window.console.log(this.strokes);
-
         })
-
         // check for when you are up on the canvas
         this.$refs.canvas.addEventListener("mouseup", ()=>{
-
           this.pathString += 'z';
-
            this.newPath = this.paper.path(this.pathString);
-
           this.newPath.attr({
             'stroke': this.hex,
             'stroke-width': this.stroke_width
@@ -301,11 +294,9 @@ import MiniViewer from './MiniViewer';
           // turn off the mousedown and mouseup switch
           this.mouseDown = false;
           this.mouseUp = true;
-
           // return strokes
           window.console.log("Final Strokes");
           window.console.log(this.strokes);
-
         });
         // disable right click menu on canvas
         this.$refs.canvas.addEventListener("contextmenu", e => e.preventDefault());
@@ -321,7 +312,6 @@ import MiniViewer from './MiniViewer';
       },
       showColor () {
         if (typeof this.color === 'string') return this.color
-
         return JSON.stringify(Object.keys(this.color).reduce((color, key) => {
           color[key] = Number(this.color[key].toFixed(2))
           return color
@@ -333,32 +323,4 @@ import MiniViewer from './MiniViewer';
     },
   }
 
-
-// export default {
-//   name: 'Ping',
-//   data() {
-//     return {
-//       msg: '',
-//     };
-//   },
-//   methods: {
-//     getMessage() {
-//       const path = 'http://localhost:5000/ping';
-//       axios.get(path)
-//         .then((res) => {
-//           this.msg = res.data;
-//         })
-//         .catch((error) => {
-//           // eslint-disable-next-line
-//           console.error(error);
-//         });
-//     },
-//   },
-//   created() {
-//     this.getMessage();
-//   },
-// };
-
 </script>
-
-
