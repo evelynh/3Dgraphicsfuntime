@@ -23,7 +23,7 @@
          <v-icon right>mdi-autorenew</v-icon> 
        </v-btn>
        <v-btn class="my-4" block
-       @click="toViewer"> 
+       @click="onSubmit"> 
          Submit
          <v-icon right>mdi-upload</v-icon> 
        </v-btn>
@@ -63,6 +63,9 @@
           </v-col>
         </v-row>
       </v-layout>
+      <!-- <v-layout>
+        <p>{{ strokes }}</p>
+      </v-layout> -->
     </v-layout>
     <v-layout>
       <Viewer3d/>
@@ -116,6 +119,26 @@ import Viewer3d from './Viewer3d';
       slider: 5
     }),
     methods: {
+        sendStrokes(payload){
+          const path = 'http://localhost:5000/teddy';
+          axios.post(path, payload);
+
+          this.toViewer();
+
+            // .then(() => {
+            //   this.strokes = res.data.books;
+            // })
+            // .catch((error) => {
+            //   // eslint-disable-next-line
+            //   console.error(error);
+            // });
+        },
+        onSubmit(evt){
+          evt.preventDefault();
+          let payload = this.strokes;
+          window.console.log(payload);
+          this.sendStrokes(payload);
+        },
         getMessage() {
         const path = 'http://localhost:5000/';
         axios.get(path)
@@ -157,6 +180,7 @@ import Viewer3d from './Viewer3d';
       );
       },
       toViewer() {
+        // this.onSubmit();
         window.location.href = '/viewer';
       },
       drawit(){
