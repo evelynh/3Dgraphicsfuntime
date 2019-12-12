@@ -35,7 +35,6 @@
               ref="canvas"
               :width="card_width" 
               :height="card_height"
-              style="border: 1px black solid"
             ></div>
       </v-card>
      <v-layout column align-center justify-space-between fill-height>
