@@ -23,10 +23,11 @@
          <v-icon right>mdi-autorenew</v-icon> 
        </v-btn>
        <v-btn class="my-4" block
-       @click="onSubmit"> 
+       @click="toViewer"> 
          Submit
          <v-icon right>mdi-upload</v-icon> 
        </v-btn>
+        <MiniViewer/>
      </v-layout>
      <v-spacer></v-spacer>
       <v-card class="elevation-12" :width="card_width" :height="card_height">
@@ -34,6 +35,7 @@
               ref="canvas"
               :width="card_width" 
               :height="card_height"
+              style="border: 1px black solid"
             ></div>
       </v-card>
      <v-layout column align-center justify-space-between fill-height>
@@ -63,27 +65,26 @@
           </v-col>
         </v-row>
       </v-layout>
-      <!-- <v-layout>
-        <p>{{ strokes }}</p>
-      </v-layout> -->
+      
     </v-layout>
     <v-layout>
-      <Viewer3d/>
+     
     </v-layout>
+
   </v-container>
 </template>
 
 <script>
 import Raphael from "raphael";
 import axios from 'axios';
-import Viewer3d from './Viewer3d';
+import MiniViewer from './MiniViewer';
 
 // import VueColor from "vue-color";
 
   export default {
     name: 'Home',
     components: {
-      Viewer3d,
+      MiniViewer,
     },
     data: () => ({
       // types: ['hex', 'hexa', 'rgba', 'hsla', 'hsva'],
@@ -119,26 +120,6 @@ import Viewer3d from './Viewer3d';
       slider: 5
     }),
     methods: {
-        sendStrokes(payload){
-          const path = 'http://localhost:5000/teddy';
-          axios.post(path, payload);
-
-          this.toViewer();
-
-            // .then(() => {
-            //   this.strokes = res.data.books;
-            // })
-            // .catch((error) => {
-            //   // eslint-disable-next-line
-            //   console.error(error);
-            // });
-        },
-        onSubmit(evt){
-          evt.preventDefault();
-          let payload = this.strokes;
-          window.console.log(payload);
-          this.sendStrokes(payload);
-        },
         getMessage() {
         const path = 'http://localhost:5000/';
         axios.get(path)
@@ -180,7 +161,6 @@ import Viewer3d from './Viewer3d';
       );
       },
       toViewer() {
-        // this.onSubmit();
         window.location.href = '/viewer';
       },
       drawit(){
