@@ -30,11 +30,11 @@ $ source env/bin/activate
 We have to use Docker for PyMesh and were unable to get the frontend synchronized with the backend. However, the algorithm can
 be tested the following ways:
 - Once you have Docker installed, copy the Dockerfile and Requirements.txt from our GitHub repository
-- In one terminal type: docker build -t name .
+- In one terminal type: docker build -t `name` .
 - Then type: docker run -v `pwd`:/app name
 - Open another terminal and type: docker ps
-- Remember the container name under `NAMES` associated with name
-- Then type: docker exec -it container_name /bin/bash
+- Remember the container name under `NAMES` associated with `name`
+- Then type: docker exec -it `container_name` /bin/bash
 - To run the algorithm you can type: python3 generate_obj.py
 - If you want to see the result of inputting different points, in main create an array of array of 2D points and 
 pass it into the teddy algorithm. 
