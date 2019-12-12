@@ -680,6 +680,7 @@ def elevate(vertices, faces, axis, neighbors):
     return 0;
 
 def teddy(points):
+	points = np.asarray(points)
 	hex_tri = pymesh.triangle();
 	hex_tri.points = points;
 	hex_tri.split_boundary = False;
@@ -716,15 +717,14 @@ def teddy(points):
 	elevate(updated_points, updated_faces, hex_axis, neighbors);
 
 def main():
-	print("------HEX------");
-	hex = [[0,0],
-		[.5, 3],
-		[2,5],
-		[5,6],
-		[6.5,3],
-		[7,0]]
-	hex = np.asarray(hex)
-	teddy(hex);
+	# print("------HEX------");
+	# hex = [[0,0],
+	# 	[.5, 3],
+	# 	[2,5],
+	# 	[5,6],
+	# 	[6.5,3],
+	# 	[7,0]]
+	# teddy(hex);
 
 	# print("------PENT------")
 	# pent = [[0.0, 0.0], 
@@ -732,15 +732,13 @@ def main():
 	# 	[1.0, 1.0], 
 	# 	[0.5, 1.5], 
 	# 	[0.0, 1.0]]
-	# pent = np.asarray(pent)
 	# teddy(pent);
 
-	# sq = [[0, 0],
-	# 	[1, 0],
-	# 	[1, 1],
-	# 	[0, 1]]
-	# sq = np.asarray(sq)
-	# teddy(sq)
+	sq = [[0, 0],
+		[1, 0],
+		[1, 1],
+		[0, 1]]
+	teddy(sq)
 	
 
 if __name__== "__main__":
