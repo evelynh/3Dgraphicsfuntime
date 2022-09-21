@@ -13,7 +13,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "raphael": "^2.3.0",
     "vue": "^2.6.10",
-    "vuetify": "^2.1.0"
+    "vuetify": "^2.6.10"
   },
   "devDependencies": {
     "@mdi/font": "^4.5.95",
